@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ergenia | Dashboard de Streaming</title>
+  <link rel="stylesheet" href="/static/css/main.css">
+  <script type="module" src="/static/js/main.js"></script>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="top-bar">
+      <div class="brand">
+        <img src="/static/logo.png" alt="Logo Ergenia" class="brand-logo">
+        <h1>Cámaras Ergenia</h1>
+      </div>
+      <div class="top-status">
+        <span id="overall-status" class="status-chip status-idle">Sin transmisión</span>
+        <span class="metric-pill">Streams <strong id="metric-total">--</strong></span>
+        <span class="metric-pill">Activos <strong id="metric-live">--</strong></span>
+        <span class="metric-pill">Alertas <strong id="metric-alerts">--</strong></span>
+      </div>
+    </header>
+
+    <main class="main-view">
+      <section id="landing-view" class="view landing-view" aria-live="polite">
+        <div id="station-buttons" class="station-grid"></div>
+      </section>
+
+      <section id="station-view" class="view station-view hidden" aria-live="polite"></section>
+    </main>
+
+    <footer class="app-footer">
+      <p>Ergenia · Monitoreo remoto de estaciones de carga</p>
+    </footer>
+  </div>
+</body>
+</html>
