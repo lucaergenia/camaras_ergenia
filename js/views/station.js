@@ -54,6 +54,7 @@ export function showStation(stationId, onBack) {
 }
 
 export function showLandingView() {
+  setCurrentStation(null);
   const landing = document.getElementById("landing-view");
   const view = document.getElementById("station-view");
 
