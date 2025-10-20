@@ -27,9 +27,6 @@ for stream_cfg in STREAMS:
   )
 
 
-registry.start_all()
-
-
 @app.on_event("shutdown")
 def handle_shutdown() -> None:
   registry.stop_all()
