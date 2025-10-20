@@ -47,7 +47,7 @@ El dashboard estará disponible en `http://localhost:8000/`. Los recursos estát
 
 Cada stream se ejecuta en un hilo con un proceso `ffmpeg` dedicado (flags `nobuffer`, `low_delay`, `tcp`). Si la conexión cae, el backend reinicia el proceso aplicando un backoff corto.
 
-Para minimizar el uso de memoria en despliegues con recursos limitados, los procesos de `ffmpeg` se inician bajo demanda (cuando el cliente solicita `/streams/<id>/mjpeg`) y se cierran en el shutdown de la aplicación.
+Para minimizar el uso de memoria en despliegues con recursos limitados, los procesos de `ffmpeg` se inician bajo demanda (cuando el cliente solicita `/streams/<id>/mjpeg`) y se cierran en el shutdown de la aplicación. Además, se utilizan perfiles RTSP `/profile2`, escalado a 640px de ancho y un framerate reducido para disminuir el consumo.
 
 ## Personalización
 

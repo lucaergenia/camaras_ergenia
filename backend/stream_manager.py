@@ -26,9 +26,9 @@ class FFmpegMJPEGStream:
       rtsp_url: str,
       *,
       ffmpeg_path: Optional[str] = None,
-      reconnect_delay: float = 3.0,
-      target_fps: float = 15.0,
-      quality: int = 7,
+      reconnect_delay: float = 4.0,
+      target_fps: float = 8.0,
+      quality: int = 12,
   ) -> None:
     self.stream_id = stream_id
     self.rtsp_url = rtsp_url
@@ -131,10 +131,11 @@ class FFmpegMJPEGStream:
       "-fflags", "nobuffer",
       "-flags", "low_delay",
       "-reorder_queue_size", "0",
-      "-analyzeduration", "1000000",
-      "-max_delay", "2000000",
+      "-analyzeduration", "500000",
+      "-max_delay", "1000000",
       "-i", self.rtsp_url,
-      "-vf", "scale=iw:ih",
+      "-vf", "scale=640:-2",
+      "-r", "12",
       "-f", "mjpeg",
       "-q:v", str(self.quality),
       "pipe:1",
