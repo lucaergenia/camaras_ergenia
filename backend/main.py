@@ -7,7 +7,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
-from .config import STREAMS
+from .config import STATIONS, STREAMS
 from .stream_manager import FFmpegMJPEGStream, StreamRegistry, mjpeg_generator
 
 
@@ -40,7 +40,6 @@ def get_root() -> FileResponse:
 @app.get("/api/stations")
 async def list_stations() -> JSONResponse:
   grouped = defaultdict(list)
-  station_meta = {}
 
   for cfg in STREAMS:
     grouped[cfg["station_id"]].append(
@@ -52,16 +51,18 @@ async def list_stations() -> JSONResponse:
         "mjpeg_url": f"/streams/{cfg['id']}/mjpeg",
       }
     )
-    station_meta[cfg["station_id"]] = cfg["station_name"]
 
-  stations = [
-    {
-      "id": station_id,
-      "name": station_meta[station_id],
-      "feeds": grouped[station_id],
-    }
-    for station_id in grouped
-  ]
+  stations = []
+  for info in STATIONS:
+    station_id = info["id"]
+    stations.append(
+      {
+        "id": station_id,
+        "name": info["name"],
+        "description": info.get("description"),
+        "feeds": grouped.get(station_id, []),
+      }
+    )
 
   payload = {"stations": stations}
   return JSONResponse(payload)

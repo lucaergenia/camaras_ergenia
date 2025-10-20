@@ -14,6 +14,12 @@ class StreamConfig(TypedDict):
   rtsp_url: str
 
 
+class StationInfo(TypedDict, total=False):
+  id: str
+  name: str
+  description: str
+
+
 STREAMS: Final[List[StreamConfig]] = [
   {
     "id": "salvio-554",
@@ -70,5 +76,21 @@ STREAMS: Final[List[StreamConfig]] = [
     "label": "Canal 3",
     "description": "Panorámica",
     "rtsp_url": "rtsp://186.31.138.165:556/profile2",
+  },
+]
+
+
+STATIONS: Final[List[StationInfo]] = [
+  {"id": "salvio", "name": "Estación Salvio"},
+  {"id": "portobelo", "name": "Estación Portobelo"},
+  {
+    "id": "habitel",
+    "name": "Estación Habitel",
+    "description": "Cámaras no Habilitadas por el momento",
+  },
+  {
+    "id": "santafe",
+    "name": "Estación Santafé",
+    "description": "Cámaras no Habilitadas por el momento",
   },
 ]

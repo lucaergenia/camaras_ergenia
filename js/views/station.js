@@ -43,6 +43,20 @@ export function showStation(stationId, onBack) {
 
   const refresh = () => refreshSummary(view);
 
+  if (!station.feeds || station.feeds.length <= 2) {
+    grid.classList.add("single-column");
+  } else {
+    grid.classList.remove("single-column");
+  }
+
+  if (!station.feeds || station.feeds.length === 0) {
+    const message =
+      station.description || "Cámaras no habilitadas por el momento.";
+    grid.innerHTML = `<div class="station-empty station-unavailable">${message}</div>`;
+    refresh();
+    return;
+  }
+
   station.feeds.forEach((feed, index) => {
     const position = index + 1;
     const card = createStreamCard(station, feed, position, station.feeds.length);

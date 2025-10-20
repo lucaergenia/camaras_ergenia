@@ -11,6 +11,12 @@ export function renderLanding(onStationSelected) {
   landing.classList.remove("hidden");
   container.innerHTML = "";
 
+  if (state.stations.length <= 2) {
+    container.classList.add("single-column");
+  } else {
+    container.classList.remove("single-column");
+  }
+
   if (state.stations.length === 0) {
     const empty = document.createElement("div");
     empty.className = "station-empty";

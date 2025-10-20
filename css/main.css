@@ -156,8 +156,12 @@ body {
 .station-grid {
   margin-top: clamp(6px, 1vw, 12px);
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: clamp(16px, 2.4vw, 24px);
+}
+
+.station-grid.single-column {
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .station-button {
@@ -218,6 +222,21 @@ body {
   text-align: center;
   color: var(--text-muted);
   font-size: 0.84rem;
+}
+
+.station-unavailable {
+  margin: 0;
+  width: 100%;
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+  background: rgba(18, 19, 25, 0.7);
+  border: 1px dashed rgba(255, 255, 255, 0.08);
+  font-size: 0.9rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .station-view {
@@ -287,8 +306,12 @@ body {
 
 .stream-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: clamp(18px, 2.6vw, 26px);
+}
+
+.stream-grid.single-column {
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .stream-card {
@@ -449,10 +472,20 @@ body {
   }
 
   .station-grid {
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .stream-grid {
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 540px) {
+  .stream-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .station-grid {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
