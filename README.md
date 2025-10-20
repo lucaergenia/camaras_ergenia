@@ -35,6 +35,8 @@ Es obligatorio contar con el binario `ffmpeg` en el `PATH`, ya que el backend lo
 uvicorn backend.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
+> Nota para despliegues (Render, Railway, etc.): si la plataforma espera encontrar el aplicativo como `app.main:app`, se incluye un wrapper en `app/main.py` que reexporta la instancia principal de FastAPI. Aun así, el punto de entrada real y la configuración viven en `backend/main.py`.
+
 El dashboard estará disponible en `http://localhost:8000/`. Los recursos estáticos se sirven desde `/static/` y los streams MJPEG en `/streams/<stream_id>/mjpeg`.
 
 ## Endpoints principales
