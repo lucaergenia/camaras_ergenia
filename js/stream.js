@@ -48,6 +48,8 @@ export function initStreamCard(card, feed, onStatusChange) {
   const img = card.querySelector('[data-role="stream"]');
   if (!img) return;
 
+  card._onStatusChange = onStatusChange;
+
   img.addEventListener("load", () => {
     setStreamStatus(card, STATUS.LIVE, "Señal establecida", onStatusChange);
   });
@@ -64,8 +66,16 @@ function reloadStream(card, feed, onStatusChange, manual = false) {
   const img = card.querySelector('[data-role="stream"]');
   if (!img) return;
 
+  if (card._retryTimeout) {
+    clearTimeout(card._retryTimeout);
+    card._retryTimeout = null;
+  }
+
   const url = `${feed.mjpeg_url}?stream=${encodeURIComponent(feed.id)}&t=${Date.now()}`;
   img.src = "";
+
+  card.dataset.suspended = "false";
+  card.dataset.retrying = "false";
 
   const indicator =
     manual && STATUS_DICTIONARY[STATUS.IDLE]
@@ -84,9 +94,20 @@ function scheduleRetry(card, feed, onStatusChange) {
     return;
   }
 
+  if (card._retryTimeout) {
+    clearTimeout(card._retryTimeout);
+    card._retryTimeout = null;
+  }
+
   card.dataset.retrying = "true";
-  setTimeout(() => {
+  card._retryTimeout = setTimeout(() => {
     card.dataset.retrying = "false";
+    card._retryTimeout = null;
+
+    if (card.dataset.suspended === "true") {
+      return;
+    }
+
     reloadStream(card, feed, onStatusChange);
   }, 4000);
 }
@@ -141,4 +162,44 @@ function setStreamStatus(card, status, indicatorOverride, onStatusChange) {
 function extractPort(rtspUrl) {
   const match = rtspUrl?.match(/:(\d+)(?:\/|$)/);
   return match ? match[1] : "--";
+}
+
+export function suspendStreamCard(card) {
+  const img = card.querySelector('[data-role="stream"]');
+  if (img) {
+    img.removeAttribute("src");
+  }
+
+  if (card._retryTimeout) {
+    clearTimeout(card._retryTimeout);
+    card._retryTimeout = null;
+  }
+
+  card.dataset.retrying = "false";
+  card.dataset.suspended = "true";
+
+  const onStatusChange = card._onStatusChange;
+  setStreamStatus(card, STATUS.IDLE, "Transmisión detenida", onStatusChange);
+}
+
+export function resumeStreamCard(card) {
+  if (card.dataset.suspended !== "true") {
+    return;
+  }
+
+  const feedId = card.dataset.streamId;
+  const mjpeg = card.dataset.mjpeg;
+  const rtsp = card.dataset.rtsp;
+
+  if (!feedId || !mjpeg) {
+    return;
+  }
+
+  const feed = {
+    id: feedId,
+    mjpeg_url: mjpeg,
+    rtsp_url: rtsp,
+  };
+
+  reloadStream(card, feed, card._onStatusChange, true);
 }

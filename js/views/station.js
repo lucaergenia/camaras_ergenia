@@ -1,6 +1,6 @@
 import { STATUS } from "../constants.js";
 import { state, setCurrentStation, getStationById } from "../state.js";
-import { createStreamCard, initStreamCard } from "../stream.js";
+import { createStreamCard, initStreamCard, suspendStreamCard, resumeStreamCard } from "../stream.js";
 import { updateMetric, setOverallStatus } from "../ui/status.js";
 
 export function showStation(stationId, onBack) {
@@ -37,6 +37,7 @@ export function showStation(stationId, onBack) {
 
   view.classList.remove("hidden");
   view.classList.add("active");
+  delete view.dataset.suspended;
 
   const grid = view.querySelector('[data-role="grid"]');
   if (!grid) return;
@@ -77,6 +78,7 @@ export function showLandingView() {
     streams.forEach((img) => {
       img.src = "";
     });
+    delete view.dataset.suspended;
     view.classList.remove("active");
     view.classList.add("hidden");
     view.innerHTML = "";
@@ -115,4 +117,35 @@ function refreshSummary(view) {
   }
 
   setOverallStatus("En espera", "status-idle");
+}
+
+export function suspendStationView() {
+  const view = document.getElementById("station-view");
+  if (!view || !view.classList.contains("active") || view.dataset.suspended === "true") {
+    return;
+  }
+
+  const cards = Array.from(view.querySelectorAll(".stream-card"));
+  if (cards.length === 0) {
+    return;
+  }
+
+  view.dataset.suspended = "true";
+  cards.forEach((card) => suspendStreamCard(card));
+}
+
+export function resumeStationView() {
+  const view = document.getElementById("station-view");
+  if (!view || !view.classList.contains("active") || view.dataset.suspended !== "true") {
+    return;
+  }
+
+  const cards = Array.from(view.querySelectorAll(".stream-card"));
+  if (cards.length === 0) {
+    view.dataset.suspended = "false";
+    return;
+  }
+
+  view.dataset.suspended = "false";
+  cards.forEach((card) => resumeStreamCard(card));
 }

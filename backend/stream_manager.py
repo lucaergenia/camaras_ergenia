@@ -27,14 +27,15 @@ class FFmpegMJPEGStream:
       *,
       ffmpeg_path: Optional[str] = None,
       reconnect_delay: float = 4.0,
-      target_fps: float = 8.0,
+      target_fps: float = 15.0,
       quality: int = 12,
   ) -> None:
     self.stream_id = stream_id
     self.rtsp_url = rtsp_url
     self.ffmpeg_path = ffmpeg_path or shutil.which("ffmpeg") or "ffmpeg"
     self.reconnect_delay = reconnect_delay
-    self.target_interval = 1.0 / max(target_fps, 1.0)
+    self.target_fps = max(target_fps, 1.0)
+    self.target_interval = 1.0 / self.target_fps
     self.quality = max(2, min(31, quality))
 
     self._process: Optional[subprocess.Popen[bytes]] = None
@@ -42,6 +43,7 @@ class FFmpegMJPEGStream:
     self._lock = threading.Lock()
     self._running = False
     self._thread: Optional[threading.Thread] = None
+    self._frame_counter: int = 0
 
   def start(self) -> None:
     if self._running:
@@ -59,6 +61,10 @@ class FFmpegMJPEGStream:
   def latest_frame(self) -> Optional[bytes]:
     with self._lock:
       return self._frame_bytes
+
+  def latest_frame_info(self) -> tuple[int, Optional[bytes]]:
+    with self._lock:
+      return self._frame_counter, self._frame_bytes
 
   # Internal helpers -------------------------------------------------------
   def _loop(self) -> None:
@@ -116,6 +122,7 @@ class FFmpegMJPEGStream:
 
           with self._lock:
             self._frame_bytes = frame
+            self._frame_counter = (self._frame_counter + 1) % 1_000_000_000
 
       # process ended unexpectedly
       self._terminate_process()
@@ -135,7 +142,7 @@ class FFmpegMJPEGStream:
       "-max_delay", "1000000",
       "-i", self.rtsp_url,
       "-vf", "scale=640:-2",
-      "-r", "12",
+      "-r", f"{self.target_fps:.2f}".rstrip("0").rstrip("."),
       "-f", "mjpeg",
       "-q:v", str(self.quality),
       "pipe:1",
@@ -188,16 +195,20 @@ async def mjpeg_generator(stream: FFmpegMJPEGStream, boundary: str = "frame") ->
 
   stream.start()
 
+  last_counter = -1
+  idle_sleep = max(stream.target_interval / 4, 0.01)
+
   while True:
-    frame = stream.latest_frame()
-    if frame is not None:
-      payload = (
-        f"--{boundary}\r\n"
-        "Content-Type: image/jpeg\r\n"
-        f"Content-Length: {len(frame)}\r\n\r\n"
-      ).encode("utf-8") + frame + b"\r\n"
-      yield payload
-      await asyncio.sleep(stream.target_interval)
+    counter, frame = stream.latest_frame_info()
+
+    if frame is None or counter == last_counter:
+      await asyncio.sleep(idle_sleep)
       continue
 
-    await asyncio.sleep(0.1)
+    last_counter = counter
+    payload = (
+      f"--{boundary}\r\n"
+      "Content-Type: image/jpeg\r\n"
+      f"Content-Length: {len(frame)}\r\n\r\n"
+    ).encode("utf-8") + frame + b"\r\n"
+    yield payload
